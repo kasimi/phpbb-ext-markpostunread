@@ -1,0 +1,18 @@
+/**
+ *
+ * @package phpBB Extension - Mark Post Unread
+ * @copyright (c) 2015 kasimi
+ * @license http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
+ *
+ */
+body.section-search p.advanced-search-link {
+	float: left;
+}
+
+body.section-search p.mark-forums-read-link {
+	float: right !important;
+}
+
+body.section-search div.action-bar {
+	clear: both;
+}

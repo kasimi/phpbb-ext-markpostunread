@@ -1,0 +1,49 @@
+<!-- INCLUDE overall_header.html -->
+
+<style>
+dd blockquote {
+	text-indent: 3.1em;
+}
+</style>
+
+<h1>{L_MARKPOSTUNREAD_TITLE}</h1>
+
+<p>v{KASIMI_MARKPOSTUNREAD_VERSION}</p>
+
+<form id="acp_board" method="post" action="{U_ACTION}">
+	<fieldset>
+		<legend>{L_MARKPOSTUNREAD_GROUP_1}</legend>
+		<dl>
+			<dt><label for="enabled">{L_MARKPOSTUNREAD_ENABLED}{L_COLON}</label><br /><span>{L_MARKPOSTUNREAD_ENABLED_EXP}</span></dt>
+			<dd>
+				<label><input type="radio" class="radio" name="enabled" value="1"<!-- IF KASIMI_MARKPOSTUNREAD_ENABLED --> checked="checked"<!-- ENDIF -->/> {L_ENABLED}</label>
+				<label><input type="radio" class="radio" name="enabled" value="0"<!-- IF not KASIMI_MARKPOSTUNREAD_ENABLED --> checked="checked"<!-- ENDIF --> /> {L_DISABLED}</label>
+			</dd>
+		</dl>
+		<dl>
+			<dt><label for="max_days">{L_MARKPOSTUNREAD_MAX_DAYS}{L_COLON}</label><br /><span>{L_MARKPOSTUNREAD_MAX_DAYS_EXP}</span></dt>
+			<dd><input type="number" name="max_days" size="4" min="0" max="999" value="{KASIMI_MARKPOSTUNREAD_MAX_DAYS}" />&nbsp;{L_DAYS}</dd>
+		</dl>
+	</fieldset>
+	<fieldset>
+		<legend>{L_MARKPOSTUNREAD_GROUP_2}</legend>
+		<dl>
+			<dt><label for="unread_posts_link">{L_MARKPOSTUNREAD_UNREAD_POSTS_LINK}{L_COLON}</label><br /><span>{L_MARKPOSTUNREAD_UNREAD_POSTS_LINK_EXP}</span></dt>
+			<dd>
+				<label><input type="radio" class="radio" name="unread_posts_link" value="0"<!-- IF KASIMI_MARKPOSTUNREAD_UNREAD_POSTS_LINK != 1 and KASIMI_MARKPOSTUNREAD_UNREAD_POSTS_LINK != 2 --> checked="checked"<!-- ENDIF --> /> <strong>{L_MARKPOSTUNREAD_UNREAD_POSTS_LINK_OPT1}</strong></label><br /><br />
+				<label><input type="radio" class="radio" name="unread_posts_link" value="1"<!-- IF KASIMI_MARKPOSTUNREAD_UNREAD_POSTS_LINK == 1 --> checked="checked"<!-- ENDIF --> /> <strong>{L_MARKPOSTUNREAD_UNREAD_POSTS_LINK_OPT2}</strong></label><br /><blockquote>{L_MARKPOSTUNREAD_UNREAD_POSTS_LINK_OPT2_EXP}</blockquote><br />
+				<label><input type="radio" class="radio" name="unread_posts_link" value="2"<!-- IF KASIMI_MARKPOSTUNREAD_UNREAD_POSTS_LINK == 2 --> checked="checked"<!-- ENDIF --> /> <strong>{L_MARKPOSTUNREAD_UNREAD_POSTS_LINK_OPT3}</strong></label><br /><blockquote>{L_MARKPOSTUNREAD_UNREAD_POSTS_LINK_OPT3_EXP}</blockquote><br />
+			</dd>
+		</dl>
+	</fieldset>
+	<fieldset>
+		<legend>{L_ACP_SUBMIT_CHANGES}</legend>
+		<p class="submit-buttons">
+			<input class="button1" type="submit" id="submit" name="submit" value="{L_SUBMIT}" />&nbsp;
+			<input class="button2" type="reset" id="reset" name="reset" value="{L_RESET}" />
+		</p>
+		{S_FORM_TOKEN}
+	</fieldset>
+</form>
+
+<!-- INCLUDE overall_footer.html -->
