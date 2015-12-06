@@ -14,13 +14,7 @@ class v1_0_0 extends \phpbb\db\migration\migration
 {
 	static public function depends_on()
 	{
-		// TODO Require version v314\rc1 once it's out
 		return array('\phpbb\db\migration\data\v31x\v314rc1');
-	}
-
-	public function effectively_installed()
-	{
-		return isset($this->config['markpostunreads_version']) && version_compare($this->config['markpostunread_version'], '1.0.0', '>=');
 	}
 
 	public function update_data()

@@ -14,6 +14,16 @@ class markpostunread_module
 {
 	public $u_action;
 
+	protected $setting_prefix = 'kasimi.markpostunread.';
+
+	protected $settings = array(
+		'version'				=> null,
+		'enabled'				=> 0,
+		'max_days'				=> 0,
+		'unread_posts_link'		=> 0,
+		'mark_forums_link'		=> 0,
+	);
+
 	function main($id, $mode)
 	{
 		global $config, $request, $template, $user, $phpbb_log;
@@ -25,14 +35,6 @@ class markpostunread_module
 
 		add_form_key('acp_markpostunread');
 
-		$setting_prefix = 'kasimi.markpostunread.';
-		$settings = array(
-			'version'			=> null,
-			'enabled'			=> 0,
-			'max_days'			=> 0,
-			'unread_posts_link'	=> 0,
-		);
-
 		if ($request->is_set_post('submit'))
 		{
 			if (!check_form_key('acp_markpostunread'))
@@ -40,12 +42,12 @@ class markpostunread_module
 				trigger_error($user->lang('FORM_INVALID') . adm_back_link($this->u_action));
 			}
 
-			foreach ($settings as $setting => $default)
+			foreach ($this->settings as $setting => $default)
 			{
 				if (!is_null($default))
 				{
 					$value = $request->variable($setting, $default, is_string($default));
-					$config->set($setting_prefix . $setting, $value);
+					$config->set($this->setting_prefix . $setting, $value);
 				}
 			}
 
@@ -57,9 +59,9 @@ class markpostunread_module
 
 		$template_vars = array();
 
-		foreach ($settings as $setting => $default)
+		foreach ($this->settings as $setting => $default)
 		{
-			$setting_full = $setting_prefix . $setting;
+			$setting_full = $this->setting_prefix . $setting;
 			$key = strtoupper(str_replace('.', '_', $setting_full));
 			$template_vars[$key] = isset($config[$setting_full]) ? $config[$setting_full] : $default;
 		}
