@@ -20,12 +20,11 @@ if (empty($lang) || !is_array($lang))
 
 $lang = array_merge($lang, array(
 	// Viewtopic
-	'MARKPOSTUNREAD_MARK_UNREAD'			=> 'Mark post as unread',
-	'MARKPOSTUNREAD_MARKED_UNREAD'			=> 'Post marked as unread.',
+	'MARKPOSTUNREAD_MARK_UNREAD'			=> 'Mark post unread',
+	'MARKPOSTUNREAD_MARKED_UNREAD'			=> 'Post successfully marked unread.',
 	'MARKPOSTUNREAD_REDIRECT_FORMAT'		=> '%s<br /><br />%s<br /><br />%s',
 
 	// Navbar
-	'MARKPOSTUNREAD_UNREAD_NONE'			=> 'No unread posts',
 	'MARKPOSTUNREAD_UNREAD_NUM_MAX'			=> 'Unread posts in over %1$d topics',
 	'MARKPOSTUNREAD_UNREAD_NUM'				=> array(
 		0 => 'No unread posts',

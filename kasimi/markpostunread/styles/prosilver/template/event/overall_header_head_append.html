@@ -1,11 +1,9 @@
-<!-- IF U_MARK_FORUMS or U_MARK_TOPICS -->
-	<!-- IF S_IS_SEARCH_RESULTS -->
-		<!-- INCLUDECSS @kasimi_markpostunread/markpostunread.css -->
-	<!-- ENDIF -->
+<!-- IF S_MARKPOSTUNREAD_IS_UNREAD_POSTS_SEARCH -->
+	<!-- INCLUDECSS @kasimi_markpostunread/markpostunread.css -->
+<!-- ELSEIF (U_MARK_FORUMS or U_MARK_TOPICS) and S_MARKPOSTUNREAD_CUSTOM_SEARCH_UNREAD_LINK -->
 	<!-- INCLUDEJS @kasimi_markpostunread/markpostunread.js -->
 	<script type="text/javascript">
-		var markpostunread = {
-			updateSearchUnreadAction: '{U_UPDATE_SEARCH_UNREAD_ACTION}'
-		};
+		var markpostunread = {};
+		markpostunread.updateSearchUnreadAction = '{U_MARKPOSTUNREAD_UPDATE_SEARCH_UNREAD_ACTION}';
 	</script>
 <!-- ENDIF -->

@@ -14,29 +14,34 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class listener implements EventSubscriberInterface
 {
-	protected $root_path;
-	protected $php_ext;
+	/* @var \phpbb\user */
 	protected $user;
+
+	/* @var \phpbb\config\config */
 	protected $config;
+
+	/* @var \phpbb\controller\helper */
 	protected $helper;
+
+	/* @var \phpbb\template\template */
 	protected $template;
+
+	/* @var \kasimi\markpostunread\includes\core */
 	protected $core;
+
+	protected $exist_unread = null;
 
 	/**
  	 * Constructor
 	 *
-	 * @param string								$root_path
-	 * @param string								$php_ext
 	 * @param \phpbb\user							$user
 	 * @param \phpbb\config\config					$config
 	 * @param \phpbb\controller\helper				$helper
 	 * @param \phpbb\template\template				$template
-	 * @param \kasimi\markpostunread\core			$core
+	 * @param \kasimi\markpostunread\includes\core	$core
 	 */
-	public function __construct($root_path, $php_ext, \phpbb\user $user, \phpbb\config\config $config, \phpbb\controller\helper $helper, \phpbb\template\template $template, \kasimi\markpostunread\core $core)
+	public function __construct(\phpbb\user $user, \phpbb\config\config $config, \phpbb\controller\helper $helper, \phpbb\template\template $template, \kasimi\markpostunread\includes\core $core)
 	{
-		$this->root_path = $root_path;
-		$this->php_ext = $php_ext;
 		$this->user = $user;
 		$this->config = $config;
 		$this->helper = $helper;
@@ -50,8 +55,14 @@ class listener implements EventSubscriberInterface
 	static public function getSubscribedEvents()
 	{
 		return array(
-			'core.search_results_modify_search_title'	=> 'inject_mark_all_forums_read_link',
+			// Mark post unread button
+			'core.viewtopic_modify_page_title'			=> 'viewtopic_lang_setup',
 			'core.viewtopic_modify_post_row'			=> 'inject_mark_unread_button',
+
+			// Mark forums read link
+			'core.search_results_modify_search_title'	=> 'inject_mark_all_forums_read_link',
+
+			// Unread posts search link
 			'core.get_unread_topics_modify_sql'			=> 'adjust_get_unread_topics_sql',
 			'core.display_forums_modify_sql'			=> 'refuse_exist_unread',
 			'core.display_forums_modify_template_vars'	=> 'accept_exist_unread',
@@ -60,18 +71,11 @@ class listener implements EventSubscriberInterface
 	}
 
 	/**
-	 * Event: core.search_results_modify_search_title
+	 * Event: core.viewtopic_modify_page_title
 	 */
-	public function inject_mark_all_forums_read_link($event)
+	public function viewtopic_lang_setup($event)
 	{
-		if ($this->config['load_anon_lastread'] || ($this->user->data['is_registered'] && !$this->user->data['is_bot']))
-		{
-			$params = sprintf('hash=%s&mark=forums&mark_time=%d', generate_link_hash('global'), time());
-			$this->template->assign_vars(array(
-				'S_IS_SEARCH_RESULTS'	=> true,
-				'U_MARK_FORUMS'			=> append_sid($this->root_path . 'index.' . $this->php_ext, $params, true),
-			));
-		}
+		$this->user->add_lang_ext('kasimi/markpostunread', 'common');
 	}
 
 	/**
@@ -79,10 +83,9 @@ class listener implements EventSubscriberInterface
 	 */
 	public function inject_mark_unread_button($event)
 	{
-		if ($this->config['kasimi.markpostunread.enabled'] && $this->config['load_db_lastread'] && $this->user->data['is_registered'] && !$this->user->data['is_bot'])
+		if ($this->core->cfg('enabled') && $this->config['load_db_lastread'] && $this->user->data['is_registered'] && !$this->user->data['is_bot'])
 		{
-			$max_days = (int) $this->config['kasimi.markpostunread.max_days'];
-			if ($max_days === 0 || time() - (60 * 60 * 24 * $max_days) <= $event['row']['post_time'])
+			if ($this->core->is_valid_post_time($event['row']['post_time']))
 			{
 				$route_params = array(
 					'return_forum_id'	=> (int) $event['row']['forum_id'],
@@ -90,8 +93,31 @@ class listener implements EventSubscriberInterface
 				);
 
 				$event['post_row'] = array_merge($event['post_row'], array(
-					'S_CAN_MARK_POST_UNREAD'	=> true,
-					'U_MARK_POST_UNREAD'		=> $this->helper->route('kasimi_markpostunread_markpostunread_controller', $route_params),
+					'S_MARKPOSTUNREAD_ALLOWED'	=> true,
+					'U_MARKPOSTUNREAD'			=> $this->helper->route('kasimi_markpostunread_markpostunread_controller', $route_params),
+				));
+			}
+		}
+	}
+
+	/**
+	 * Event: core.search_results_modify_search_title
+	 */
+	public function inject_mark_all_forums_read_link($event)
+	{
+		if ($this->core->cfg('mark_forums_link') && $event['search_id'] == 'unreadposts')
+		{
+			if ($this->config['load_anon_lastread'] || ($this->user->data['is_registered'] && !$this->user->data['is_bot']))
+			{
+				$mark_forums_params = array(
+					'hash'			=> generate_link_hash('global'),
+					'mark'			=> 'forums',
+					'mark_time'		=> time(),
+				);
+
+				$this->template->assign_vars(array(
+					'S_MARKPOSTUNREAD_IS_UNREAD_POSTS_SEARCH'	=> true,
+					'U_MARK_FORUMS'								=> append_sid($this->core->root_path . 'index.' . $this->core->php_ext, http_build_query($mark_forums_params)),
 				));
 			}
 		}
@@ -102,19 +128,22 @@ class listener implements EventSubscriberInterface
 	 */
 	public function adjust_get_unread_topics_sql($event)
 	{
-		$sql_array = $event['sql_array'];
-		$last_mark = $event['last_mark'];
-		$sql_extra = $event['sql_extra'];
-		$sql_sort = $event['sql_sort'];
-		$sql_array['WHERE'] = "
-			(
-				(tt.mark_time IS NOT NULL AND t.topic_last_post_time > tt.mark_time) OR
-				(tt.mark_time IS NULL AND ft.mark_time IS NOT NULL AND t.topic_last_post_time > ft.mark_time) OR
-				(tt.mark_time IS NULL AND ft.mark_time IS NULL AND t.topic_last_post_time > $last_mark)
-			)
-			$sql_extra
-			$sql_sort";
-		$event['sql_array'] = $sql_array;
+		if ($this->core->cfg('unread_posts_link') != 0)
+		{
+			$sql_array = $event['sql_array'];
+			$last_mark = $event['last_mark'];
+			$sql_extra = $event['sql_extra'];
+			$sql_sort = $event['sql_sort'];
+			$sql_array['WHERE'] = "
+				(
+					(tt.mark_time IS NOT NULL AND t.topic_last_post_time > tt.mark_time) OR
+					(tt.mark_time IS NULL AND ft.mark_time IS NOT NULL AND t.topic_last_post_time > ft.mark_time) OR
+					(tt.mark_time IS NULL AND ft.mark_time IS NULL AND t.topic_last_post_time > $last_mark)
+				)
+				$sql_extra
+				$sql_sort";
+			$event['sql_array'] = $sql_array;
+		}
 	}
 
 	/**
@@ -128,7 +157,7 @@ class listener implements EventSubscriberInterface
 		// but do NOT initialize if the user is on viewforum since the test for unreads may give false negatives in that context
 		if (empty($event['sql_ary']['WHERE']))
 		{
-			$this->core->exist_unread = false;
+			$this->exist_unread = false;
 		}
 	}
 
@@ -142,7 +171,7 @@ class listener implements EventSubscriberInterface
 		// and give the answer that there are unread posts
 		if ($event['forum_row']['S_UNREAD_FORUM'])
 		{
-			$this->core->exist_unread = true;
+			$this->exist_unread = true;
 		}
 	}
 
@@ -151,9 +180,11 @@ class listener implements EventSubscriberInterface
 	 */
 	public function update_search_unread_text($event)
 	{
-		$this->user->lang['SEARCH_UNREAD'] = $this->core->get_search_unread_text();
+		$this->user->lang['SEARCH_UNREAD'] = $this->core->get_search_unread_text($this->exist_unread);
+		$use_custom_link = $this->core->cfg('unread_posts_link') != 0;
 		$this->template->assign_vars(array(
-			'U_UPDATE_SEARCH_UNREAD_ACTION' => $this->helper->route('kasimi_markpostunread_searchunread_controller'),
+			'S_MARKPOSTUNREAD_CUSTOM_SEARCH_UNREAD_LINK'	=> $use_custom_link,
+			'U_MARKPOSTUNREAD_UPDATE_SEARCH_UNREAD_ACTION'	=> $use_custom_link ? $this->helper->route('kasimi_markpostunread_searchunread_controller') : '',
 		));
 	}
 }

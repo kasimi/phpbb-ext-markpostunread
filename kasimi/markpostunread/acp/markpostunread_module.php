@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /**
  *
@@ -47,6 +47,12 @@ class markpostunread_module
 				if (!is_null($default))
 				{
 					$value = $request->variable($setting, $default, is_string($default));
+
+					if ($setting === 'enabled' && $value && !$config['load_db_lastread'])
+					{
+						trigger_error($user->lang('MARKPOSTUNREAD_ENABLE_FAILED') . adm_back_link($this->u_action), E_USER_WARNING);
+					}
+
 					$config->set($this->setting_prefix . $setting, $value);
 				}
 			}
