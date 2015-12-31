@@ -23,7 +23,7 @@ $lang = array_merge($lang, array(
 	'MARKPOSTUNREAD_CONFIG'						=> 'Configurazione',
 	'MARKPOSTUNREAD_CONFIG_UPDATED'				=> 'Estensione <strong>Segna messaggi come non letti</strong><br />» Configurazione aggiornata',
 
-	'MARKPOSTUNREAD_GROUP_MARKPOSTUNREAD'					=> 'Pulsante «Segna messaggio come non letto» in viewtopic',
+	'MARKPOSTUNREAD_GROUP_MARKPOSTUNREAD'		=> 'Pulsante «Segna messaggio come non letto» in viewtopic',
 	'MARKPOSTUNREAD_ENABLED'					=> 'Pulsante «Segna messaggio come non letto»',
 	'MARKPOSTUNREAD_ENABLED_EXP'				=> 'Importante: <strong>Abilita contrassegno argomenti lato server</strong> dev’essere impostata su <strong>Sì</strong> nelle impostazioni di caricamento.',
 	'MARKPOSTUNREAD_ENABLE_FAILED'				=> 'Attivazione del pulsante «Segna messaggio come non letto» non riuscita: l’opzione <strong>Abilita contrassegno argomenti lato server</strong> è disabilitata.',
@@ -33,7 +33,7 @@ $lang = array_merge($lang, array(
 	'MARKPOSTUNREAD_GROUP_MARKFORUMSREAD'		=> 'Link «Segna forum come letti» nei risultati della ricerca dei post non letti',
 	'MARKPOSTUNREAD_MARK_FORUMS_READ'			=> 'Mostra link «Segna forum come letti» nella pagina dei risultati della ricerca dei post non letti',
 
-	'MARKPOSTUNREAD_GROUP_UNREADSEARCHLINK'					=> 'Link a «Messaggi non letti» nella barra di navigazione',
+	'MARKPOSTUNREAD_GROUP_UNREADSEARCHLINK'		=> 'Link a «Messaggi non letti» nella barra di navigazione',
 	'MARKPOSTUNREAD_UNREAD_POSTS_LINK'			=> 'Azione del link «Messaggi non letti» nella barra di ricerca',
 	'MARKPOSTUNREAD_UNREAD_POSTS_LINK_EXP'		=> 'Le opzioni 2 e 3 funzionano solo per gli utenti registrati; se un utente non è identificato, vedrà sempre «Messaggi non letti».',
 	'MARKPOSTUNREAD_UNREAD_POSTS_LINK_OPT1'		=> '1) Mostra sempre «Unread posts» (impostazione predefinita )',
