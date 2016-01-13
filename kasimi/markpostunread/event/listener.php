@@ -29,6 +29,7 @@ class listener implements EventSubscriberInterface
 	/* @var \kasimi\markpostunread\includes\core */
 	protected $core;
 
+	/* @var bool */
 	protected $exist_unread = null;
 
 	/**
@@ -40,13 +41,19 @@ class listener implements EventSubscriberInterface
 	 * @param \phpbb\template\template				$template
 	 * @param \kasimi\markpostunread\includes\core	$core
 	 */
-	public function __construct(\phpbb\user $user, \phpbb\config\config $config, \phpbb\controller\helper $helper, \phpbb\template\template $template, \kasimi\markpostunread\includes\core $core)
+	public function __construct(
+		\phpbb\user $user,
+		\phpbb\config\config $config,
+		\phpbb\controller\helper $helper,
+		\phpbb\template\template $template,
+		\kasimi\markpostunread\includes\core $core
+	)
 	{
-		$this->user = $user;
-		$this->config = $config;
-		$this->helper = $helper;
-		$this->template = $template;
-		$this->core = $core;
+		$this->user		= $user;
+		$this->config	= $config;
+		$this->helper	= $helper;
+		$this->template	= $template;
+		$this->core		= $core;
 	}
 
 	/**
@@ -58,9 +65,6 @@ class listener implements EventSubscriberInterface
 			// Mark post unread button
 			'core.viewtopic_modify_page_title'			=> 'viewtopic_lang_setup',
 			'core.viewtopic_modify_post_row'			=> 'inject_mark_unread_button',
-
-			// Mark forums read link
-			'core.search_results_modify_search_title'	=> 'inject_mark_all_forums_read_link',
 
 			// Unread posts search link
 			'core.get_unread_topics_modify_sql'			=> 'adjust_get_unread_topics_sql',
@@ -95,29 +99,6 @@ class listener implements EventSubscriberInterface
 				$event['post_row'] = array_merge($event['post_row'], array(
 					'S_MARKPOSTUNREAD_ALLOWED'	=> true,
 					'U_MARKPOSTUNREAD'			=> $this->helper->route('kasimi_markpostunread_markpostunread_controller', $route_params),
-				));
-			}
-		}
-	}
-
-	/**
-	 * Event: core.search_results_modify_search_title
-	 */
-	public function inject_mark_all_forums_read_link($event)
-	{
-		if ($this->core->cfg('mark_forums_link') && $event['search_id'] == 'unreadposts')
-		{
-			if ($this->config['load_anon_lastread'] || ($this->user->data['is_registered'] && !$this->user->data['is_bot']))
-			{
-				$mark_forums_params = array(
-					'hash'			=> generate_link_hash('global'),
-					'mark'			=> 'forums',
-					'mark_time'		=> time(),
-				);
-
-				$this->template->assign_vars(array(
-					'S_MARKPOSTUNREAD_IS_UNREAD_POSTS_SEARCH'	=> true,
-					'U_MARK_FORUMS'								=> append_sid($this->core->root_path . 'index.' . $this->core->php_ext, http_build_query($mark_forums_params)),
 				));
 			}
 		}

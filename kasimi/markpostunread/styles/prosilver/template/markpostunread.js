@@ -5,7 +5,6 @@
  * @license http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
  *
  */
-
 jQuery(function($) {
 	var cbName = $('#active_topics').length ? 'mark_forums_read' : 'mark_topics_read';
 	var cbPhpbb = phpbb.ajaxCallbacks[cbName];

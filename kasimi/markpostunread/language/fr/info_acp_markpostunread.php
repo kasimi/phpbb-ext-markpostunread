@@ -30,9 +30,6 @@ $lang = array_merge($lang, array(
 	'MARKPOSTUNREAD_MAX_DAYS'					=> 'Ancienneté maximale des sujets pouvant être marqués comme non lus, en jours',
 	'MARKPOSTUNREAD_MAX_DAYS_EXP'				=> 'Lorsqu’un utilisateur marque un message comme non lu, une nouvelle ligne est insérée dans la table topics_track pour chaque sujet déjà lu dans le forum correspondant avec un last_post_time après le post_time du message marqué comme non lu. Sur un gros forum comprenant un très grand nombre de messages, il est possible que cette fonctionnalité requière beaucoup d&rsquo;espace dans la base de données (par exemple, si beaucoup de vos utilisateurs marquent des messages anciens comme non lus), et elle pourrait également ralentir les gros forums qui comportent de nombreux sujets. Avec cette option, vous pouvez limiter la fonctionnalité aux messages qui ne dépassent pas un nombre précis de jours d’ancienneté. Entrer 0 pour autoriser les utilisateurs à marquer <strong>tous</strong> les messages comme non lus.',
 
-	'MARKPOSTUNREAD_GROUP_MARKFORUMSREAD'		=> 'Lien «Marquer tous les forums comme lus» sur la page de résultats de recherche des messages non lus',
-	'MARKPOSTUNREAD_MARK_FORUMS_READ'			=> 'Afficher un lien «Marquer les forums comme lus» sur la page de résultats de recherche des messages non lus',
-
 	'MARKPOSTUNREAD_GROUP_UNREADSEARCHLINK'		=> 'Lien «Messages non lus» dans la barre de navigation',
 	'MARKPOSTUNREAD_UNREAD_POSTS_LINK'			=> 'Fonctionnement du lien «Messages non lus» dans la barre de navigation',
 	'MARKPOSTUNREAD_UNREAD_POSTS_LINK_EXP'		=> 'Les options 2 et 3 affectent uniquement les utilisateurs connectés. Les utilisateurs non connectés verront toujours «Messages non lus».',

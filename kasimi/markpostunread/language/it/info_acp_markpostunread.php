@@ -30,9 +30,6 @@ $lang = array_merge($lang, array(
 	'MARKPOSTUNREAD_MAX_DAYS'					=> 'Età massima dei messaggi (in giorni)',
 	'MARKPOSTUNREAD_MAX_DAYS_EXP'				=> 'Quando un utente segna come non letto un messaggio, viene inserita una nuova riga nella tabella topics_track per ogni topic già letto nel relativo forum con un last_post_time dopo un post_time del messaggio marcato come non letto. Su board grandi con un elevato numero di messaggi, è possibile che questa funzione impieghi molto spazio nel database (per esempio, se molti utenti segnano come non letti vecchi messaggi) e che rallenti le board con molti argomenti. Con quest’opzione, è possibile limitare l’uso di questa funzione a messaggi non più vecchi di un unmero di giorni specificato.<br />Inserire 0 per permettere agli utenti di marcare <strong>qualsiasi</strong> messaggio come non letto.',
 
-	'MARKPOSTUNREAD_GROUP_MARKFORUMSREAD'		=> 'Link «Segna forum come letti» nei risultati della ricerca dei post non letti',
-	'MARKPOSTUNREAD_MARK_FORUMS_READ'			=> 'Mostra link «Segna forum come letti» nella pagina dei risultati della ricerca dei post non letti',
-
 	'MARKPOSTUNREAD_GROUP_UNREADSEARCHLINK'		=> 'Link a «Messaggi non letti» nella barra di navigazione',
 	'MARKPOSTUNREAD_UNREAD_POSTS_LINK'			=> 'Azione del link «Messaggi non letti» nella barra di ricerca',
 	'MARKPOSTUNREAD_UNREAD_POSTS_LINK_EXP'		=> 'Le opzioni 2 e 3 funzionano solo per gli utenti registrati; se un utente non è identificato, vedrà sempre «Messaggi non letti».',

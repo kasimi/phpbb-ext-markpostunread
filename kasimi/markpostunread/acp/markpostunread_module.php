@@ -21,7 +21,6 @@ class markpostunread_module
 		'enabled'				=> 0,
 		'max_days'				=> 0,
 		'unread_posts_link'		=> 0,
-		'mark_forums_link'		=> 0,
 	);
 
 	function main($id, $mode)

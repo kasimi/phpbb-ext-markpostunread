@@ -30,9 +30,6 @@ $lang = array_merge($lang, array(
 	'MARKPOSTUNREAD_MAX_DAYS'					=> 'Maximum age of posts, in days',
 	'MARKPOSTUNREAD_MAX_DAYS_EXP'				=> 'When a user marks a post unread, a row in the topics_track table is inserted for each already read topic in the relevant forum with a last_post_time after the post_time of the post being marked unread. On a big board with a huge number of posts, it is conceivable that a lot of db storage could be used for this feature (e.g. if a lot of your users mark really old posts unread), as well as slow down big boards with lots of topics. With this option, you can limit the feature to posts that are no more than a specified number of days old. Enter 0 to allow your users to mark <strong>all</strong> posts unread.',
 
-	'MARKPOSTUNREAD_GROUP_MARKFORUMSREAD'		=> '«Mark forums read» link in unread posts search results',
-	'MARKPOSTUNREAD_MARK_FORUMS_READ'			=> 'Display «Mark forums read» link on unread posts search results page',
-
 	'MARKPOSTUNREAD_GROUP_UNREADSEARCHLINK'		=> '«Unread posts» search link in the navbar',
 	'MARKPOSTUNREAD_UNREAD_POSTS_LINK'			=> 'Behaviour of the «Unread posts» search link in the navbar',
 	'MARKPOSTUNREAD_UNREAD_POSTS_LINK_EXP'		=> 'Options 2 and 3 only affect logged in users. Users who are not logged in always see «Unread posts».',
