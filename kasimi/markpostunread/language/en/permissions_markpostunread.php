@@ -20,5 +20,5 @@ if (empty($lang) || !is_array($lang))
 
 $lang = array_merge($lang, array(
 	// Permission
-	'ACL_U_MARKPOSTUNREAD_USE'			=> 'Can use Mark post unread',
+	'ACL_U_MARKPOSTUNREAD_USE'			=> 'Can mark posts unread',
 ));
