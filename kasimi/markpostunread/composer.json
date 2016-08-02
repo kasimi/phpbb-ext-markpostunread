@@ -3,7 +3,7 @@
 	"type": "phpbb-extension",
 	"description": "Adds a 'Mark post unread' button to each post in viewtopic.php and optionally changes the 'Unread posts' search link text to either 'No unread posts' or 'Unread posts in X topics'.",
 	"homepage": "https://github.com/kasimi",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"time": "2016-01-13",
 	"license": "GPL-2.0",
 	"authors": [{

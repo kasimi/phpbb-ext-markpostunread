@@ -29,6 +29,9 @@ class listener implements EventSubscriberInterface
 	/* @var \kasimi\markpostunread\includes\core */
 	protected $core;
 
+	/** @var \phpbb\auth\auth */
+	protected $auth;
+
 	/* @var bool */
 	protected $exist_unread = null;
 
@@ -40,13 +43,15 @@ class listener implements EventSubscriberInterface
 	 * @param \phpbb\controller\helper				$helper
 	 * @param \phpbb\template\template				$template
 	 * @param \kasimi\markpostunread\includes\core	$core
+		* @param \phpbb\auth\auth						$auth
 	 */
 	public function __construct(
 		\phpbb\user $user,
 		\phpbb\config\config $config,
 		\phpbb\controller\helper $helper,
 		\phpbb\template\template $template,
-		\kasimi\markpostunread\includes\core $core
+		\kasimi\markpostunread\includes\core $core,
+		\phpbb\auth\auth $auth
 	)
 	{
 		$this->user		= $user;
@@ -54,6 +59,7 @@ class listener implements EventSubscriberInterface
 		$this->helper	= $helper;
 		$this->template	= $template;
 		$this->core		= $core;
+		$this->auth		= $auth;
 	}
 
 	/**
@@ -65,6 +71,9 @@ class listener implements EventSubscriberInterface
 			// Mark post unread button
 			'core.viewtopic_modify_page_title'			=> 'viewtopic_lang_setup',
 			'core.viewtopic_modify_post_row'			=> 'inject_mark_unread_button',
+
+			// Permission
+			'core.permissions'							=> 'add_permission',
 
 			// Unread posts search link
 			'core.get_unread_topics_modify_sql'			=> 'adjust_get_unread_topics_sql',
@@ -97,11 +106,21 @@ class listener implements EventSubscriberInterface
 				);
 
 				$event['post_row'] = array_merge($event['post_row'], array(
-					'S_MARKPOSTUNREAD_ALLOWED'	=> true,
+					'S_MARKPOSTUNREAD_ALLOWED'	=> $this->auth->acl_get('u_markpostunread_use'),
 					'U_MARKPOSTUNREAD'			=> $this->helper->route('kasimi_markpostunread_markpostunread_controller', $route_params),
 				));
 			}
 		}
+	}
+
+	/**
+	 * Event: core.permissions
+	 */
+	public function add_permission($event)
+	{
+		$permissions = $event['permissions'];
+		$permissions['u_markpostunread_use'] = array('lang' => 'ACL_U_MARKPOSTUNREAD_USE', 'cat' => 'misc');
+		$event['permissions'] = $permissions;
 	}
 
 	/**
