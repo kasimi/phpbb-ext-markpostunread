@@ -3,7 +3,7 @@
 /**
  *
  * @package phpBB Extension - Mark Post Unread
- * @copyright (c) 2016 kasimi
+ * @copyright (c) 2015 kasimi - https://kasimi.net
  * @license http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
  *
  */
@@ -17,7 +17,6 @@ class markpostunread_module
 	protected $setting_prefix = 'kasimi.markpostunread.';
 
 	protected $settings = array(
-		'version'				=> null,
 		'enabled'				=> 0,
 		'max_days'				=> 0,
 		'unread_posts_link'		=> 0,
@@ -56,9 +55,7 @@ class markpostunread_module
 				}
 			}
 
-			$user_id = (empty($user->data)) ? ANONYMOUS : $user->data['user_id'];
-			$user_ip = (empty($user->ip)) ? '' : $user->ip;
-			$phpbb_log->add('admin', $user_id, $user_ip, 'MARKPOSTUNREAD_CONFIG_UPDATED');
+			$phpbb_log->add('admin', $user->data['user_id'], $user->ip, 'MARKPOSTUNREAD_CONFIG_UPDATED');
 			trigger_error($user->lang('CONFIG_UPDATED') . adm_back_link($this->u_action));
 		}
 
@@ -68,7 +65,9 @@ class markpostunread_module
 		{
 			$setting_full = $this->setting_prefix . $setting;
 			$key = strtoupper(str_replace('.', '_', $setting_full));
-			$template_vars[$key] = isset($config[$setting_full]) ? $config[$setting_full] : $default;
+			$value = isset($config[$setting_full]) ? $config[$setting_full] : $default;
+			settype($value, gettype($default));
+			$template_vars[$key] = $value;
 		}
 
 		$template->assign_vars($template_vars);

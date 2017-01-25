@@ -1,15 +1,16 @@
 {
 	"name": "kasimi/markpostunread",
 	"type": "phpbb-extension",
-	"description": "Adds a 'Mark post unread' button to each post in viewtopic.php and optionally changes the 'Unread posts' search link text to either 'No unread posts' or 'Unread posts in X topics'.",
+	"description": "This extension adds a 'Mark post unread' button to each post. There is a user permission to control which users are allowed to use the feature. Moreover it allows you to change the 'Unread posts' search link text to either 'No unread posts' or 'Unread posts in X topics'.",
 	"homepage": "https://github.com/kasimi",
-	"version": "1.0.3",
-	"time": "2016-01-13",
+	"version": "1.1.0",
+	"time": "2017-01-25",
 	"license": "GPL-2.0",
-	"authors": [{
+	"authors": [
+		{
 			"name": "kasimi",
-			"email": "",
-			"homepage": "https://www.phpbb.com/community/memberlist.php?mode=viewprofile&u=1330603",
+			"email": "mail@kasimi.net",
+			"homepage": "https://kasimi.net",
 			"role": "Lead Developer"
 		},
 		{
@@ -17,9 +18,11 @@
 			"email": "",
 			"homepage": "https://www.phpbb.com/customise/db/mod/view_or_mark_unread_posts/",
 			"role": "Developer of the original MOD 'View or mark unread posts' for phpBB 3.0.x"
-	}],
+		}
+	],
 	"require": {
-		"php": ">=5.3.3"
+		"php": ">=5.3.3",
+		"phpbb/phpbb": ">=3.1.4-RC1"
 	},
 	"extra": {
 		"display-name": "Mark Post Unread",

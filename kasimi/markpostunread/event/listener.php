@@ -3,55 +3,59 @@
 /**
  *
  * @package phpBB Extension - Mark Post Unread
- * @copyright (c) 2016 kasimi
+ * @copyright (c) 2015 kasimi - https://kasimi.net
  * @license http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
  *
  */
 
 namespace kasimi\markpostunread\event;
 
+use kasimi\markpostunread\includes\core;
+use phpbb\config\config;
+use phpbb\controller\helper;
+use phpbb\template\template;
+use phpbb\user;
+use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class listener implements EventSubscriberInterface
 {
-	/* @var \phpbb\user */
+	/* @var user */
 	protected $user;
 
-	/* @var \phpbb\config\config */
+	/* @var config */
 	protected $config;
 
-	/* @var \phpbb\controller\helper */
+	/* @var helper */
 	protected $helper;
 
-	/* @var \phpbb\template\template */
+	/* @var template */
 	protected $template;
 
-	/* @var \kasimi\markpostunread\includes\core */
+	/* @var core */
 	protected $core;
-
-	/** @var \phpbb\auth\auth */
-	protected $auth;
 
 	/* @var bool */
 	protected $exist_unread = null;
 
+	/** @var bool */
+	protected $can_inject = false;
+
 	/**
  	 * Constructor
 	 *
-	 * @param \phpbb\user							$user
-	 * @param \phpbb\config\config					$config
-	 * @param \phpbb\controller\helper				$helper
-	 * @param \phpbb\template\template				$template
-	 * @param \kasimi\markpostunread\includes\core	$core
-		* @param \phpbb\auth\auth						$auth
+	 * @param user		$user
+	 * @param config	$config
+	 * @param helper	$helper
+	 * @param template	$template
+	 * @param core		$core
 	 */
 	public function __construct(
-		\phpbb\user $user,
-		\phpbb\config\config $config,
-		\phpbb\controller\helper $helper,
-		\phpbb\template\template $template,
-		\kasimi\markpostunread\includes\core $core,
-		\phpbb\auth\auth $auth
+		user $user,
+		config $config,
+		helper $helper,
+		template $template,
+		core $core
 	)
 	{
 		$this->user		= $user;
@@ -59,7 +63,6 @@ class listener implements EventSubscriberInterface
 		$this->helper	= $helper;
 		$this->template	= $template;
 		$this->core		= $core;
-		$this->auth		= $auth;
 	}
 
 	/**
@@ -69,7 +72,7 @@ class listener implements EventSubscriberInterface
 	{
 		return array(
 			// Mark post unread button
-			'core.viewtopic_modify_page_title'			=> 'viewtopic_lang_setup',
+			'core.viewtopic_modify_post_data'			=> 'viewtopic_lang_setup',
 			'core.viewtopic_modify_post_row'			=> 'inject_mark_unread_button',
 
 			// Permission
@@ -86,17 +89,24 @@ class listener implements EventSubscriberInterface
 	/**
 	 * Event: core.viewtopic_modify_page_title
 	 */
-	public function viewtopic_lang_setup($event)
+	public function viewtopic_lang_setup()
 	{
-		$this->user->add_lang_ext('kasimi/markpostunread', 'common');
+		if ($this->core->can_use())
+		{
+			$this->can_inject = true;
+			$this->user->add_lang_ext('kasimi/markpostunread', 'common');
+			$this->template->assign_var('S_MARKPOSTUNREAD_31X', phpbb_version_compare(PHPBB_VERSION, '3.2.0-dev', '<'));
+		}
 	}
 
 	/**
 	 * Event: core.viewtopic_modify_post_row
+	 *
+	 * @param Event $event
 	 */
 	public function inject_mark_unread_button($event)
 	{
-		if ($this->core->cfg('enabled') && $this->config['load_db_lastread'] && $this->user->data['is_registered'] && !$this->user->data['is_bot'])
+		if ($this->can_inject)
 		{
 			if ($this->core->is_valid_post_time($event['row']['post_time']))
 			{
@@ -106,8 +116,8 @@ class listener implements EventSubscriberInterface
 				);
 
 				$event['post_row'] = array_merge($event['post_row'], array(
-					'S_MARKPOSTUNREAD_ALLOWED'	=> $this->auth->acl_get('u_markpostunread_use'),
-					'U_MARKPOSTUNREAD'			=> $this->helper->route('kasimi_markpostunread_markpostunread_controller', $route_params),
+					'S_MARKPOSTUNREAD_ALLOWED'	=> true,
+					'U_MARKPOSTUNREAD' 			=> $this->helper->route('kasimi_markpostunread_markpostunread_controller', $route_params),
 				));
 			}
 		}
@@ -115,23 +125,30 @@ class listener implements EventSubscriberInterface
 
 	/**
 	 * Event: core.permissions
+	 *
+	 * @param Event $event
 	 */
 	public function add_permission($event)
 	{
 		$permissions = $event['permissions'];
-		$permissions['u_markpostunread_use'] = array('lang' => 'ACL_U_MARKPOSTUNREAD_USE', 'cat' => 'misc');
+		$permissions['u_markpostunread_use'] = array(
+			'lang'	=> 'ACL_U_MARKPOSTUNREAD_USE',
+			'cat'	=> 'misc',
+		);
 		$event['permissions'] = $permissions;
 	}
 
 	/**
 	 * Event: core.get_unread_topics_modify_sql
+	 *
+	 * @param Event $event
 	 */
 	public function adjust_get_unread_topics_sql($event)
 	{
 		if ($this->core->cfg('unread_posts_link') != 0)
 		{
 			$sql_array = $event['sql_array'];
-			$last_mark = $event['last_mark'];
+			$last_mark = (int) $event['last_mark'];
 			$sql_extra = $event['sql_extra'];
 			$sql_sort = $event['sql_sort'];
 			$sql_array['WHERE'] = "
@@ -148,6 +165,8 @@ class listener implements EventSubscriberInterface
 
 	/**
 	 * Event: core.display_forums_modify_sql
+	 *
+	 * @param Event $event
 	 */
 	public function refuse_exist_unread($event)
 	{
@@ -163,6 +182,8 @@ class listener implements EventSubscriberInterface
 
 	/**
 	 * Event: core.display_forums_modify_template_vars
+	 *
+	 * @param Event $event
 	 */
 	public function accept_exist_unread($event)
 	{
@@ -178,13 +199,11 @@ class listener implements EventSubscriberInterface
 	/**
 	 * Event: core.page_footer
 	 */
-	public function update_search_unread_text($event)
+	public function update_search_unread_text()
 	{
-		$this->user->lang['SEARCH_UNREAD'] = $this->core->get_search_unread_text($this->exist_unread);
-		$use_custom_link = $this->core->cfg('unread_posts_link') != 0;
 		$this->template->assign_vars(array(
-			'S_MARKPOSTUNREAD_CUSTOM_SEARCH_UNREAD_LINK'	=> $use_custom_link,
-			'U_MARKPOSTUNREAD_UPDATE_SEARCH_UNREAD_ACTION'	=> $use_custom_link ? $this->helper->route('kasimi_markpostunread_searchunread_controller') : '',
+			'L_SEARCH_UNREAD'								=> $this->core->get_search_unread_text($this->exist_unread),
+			'U_MARKPOSTUNREAD_UPDATE_SEARCH_UNREAD_ACTION'	=> $this->core->cfg('unread_posts_link') != 0 ? $this->helper->route('kasimi_markpostunread_searchunread_controller', array(), false) : '',
 		));
 	}
 }

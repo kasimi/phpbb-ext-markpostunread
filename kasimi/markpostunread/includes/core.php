@@ -3,12 +3,20 @@
 /**
  *
  * @package phpBB Extension - Mark Post Unread
- * @copyright (c) 2016 kasimi
+ * @copyright (c) 2015 kasimi - https://kasimi.net
  * @license http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
  *
  */
 
 namespace kasimi\markpostunread\includes;
+
+use phpbb\auth\auth;
+use phpbb\config\config;
+use phpbb\content_visibility;
+use phpbb\db\driver\driver_interface as db_interface;
+use phpbb\exception\http_exception;
+use phpbb\exception\runtime_exception;
+use phpbb\user;
 
 class core
 {
@@ -24,45 +32,56 @@ class core
 	/* @var string */
 	public $php_ext;
 
-	/* @var \phpbb\user */
+	/* @var user */
 	protected $user;
 
-	/* @var \phpbb\config\config */
+	/* @var config */
 	protected $config;
 
-	/* @var \phpbb\auth\auth */
+	/* @var auth */
 	protected $auth;
 
-	/* @var \phpbb\db\driver\driver_interfac */
+	/* @var db_interface */
 	protected $db;
 
-	/* @var \phpbb\content_visibility */
+	/* @var content_visibility */
 	protected $content_visibility;
 
 	/**
 	 * Constructor
 	 *
-	 * @param string								$root_path
-	 * @param string								$php_ext
-	 * @param \phpbb\user							$user
-	 * @param \phpbb\config\config					$config
-	 * @param \phpbb\auth\auth						$auth
-	 * @param \phpbb\db\driver\driver_interface		$db
-	 * @param \phpbb\content_visibility				$content_visibility
+	 * @param string				$root_path
+	 * @param string				$php_ext
+	 * @param user					$user
+	 * @param config				$config
+	 * @param auth					$auth
+	 * @param db_interface			$db
+	 * @param content_visibility	$content_visibility
 	 */
-	public function __construct($root_path, $php_ext, \phpbb\user $user, \phpbb\config\config $config, \phpbb\auth\auth $auth, \phpbb\db\driver\driver_interface $db, \phpbb\content_visibility $content_visibility)
+	public function __construct(
+		$root_path,
+		$php_ext,
+		user $user,
+		config $config,
+		auth $auth,
+		db_interface $db,
+		content_visibility $content_visibility
+	)
 	{
-		$this->root_path = $root_path;
-		$this->php_ext = $php_ext;
-		$this->user = $user;
-		$this->config = $config;
-		$this->auth = $auth;
-		$this->db = $db;
-		$this->content_visibility = $content_visibility;
+		$this->root_path			= $root_path;
+		$this->php_ext				= $php_ext;
+		$this->user					= $user;
+		$this->config				= $config;
+		$this->auth					= $auth;
+		$this->db					= $db;
+		$this->content_visibility	= $content_visibility;
 	}
 
 	/**
-	 *	Quick access to this extension's config values
+	 * Quick access to this extension's config values
+	 *
+	 * @param string $key
+	 * @return string
 	 */
 	public function cfg($key)
 	{
@@ -70,7 +89,22 @@ class core
 	}
 
 	/**
+	 * Returns true if the user is allowed to mark posts unread, false otherwise.
+	 * Does not check post time validity.
+	 *
+	 * @return bool
+	 */
+	public function can_use()
+	{
+		// The board is set up to use cookies rather than the database to store read topic info, the user is not registered or the user is a bot
+		return $this->cfg('enabled') && $this->auth->acl_get('u_markpostunread_use') && $this->config['load_db_lastread'] && $this->user->data['is_registered'] && !$this->user->data['is_bot'];
+	}
+
+	/**
 	 * Returns false if the post_time is too old according to the ACP setting, otherwise true
+	 *
+	 * @param int $post_time
+	 * @return bool
 	 */
 	public function is_valid_post_time($post_time)
 	{
@@ -80,13 +114,15 @@ class core
 
 	/**
 	 * Marks a post unread when the user clicks the mark post as unread link in viewtopic
+	 *
+	 * @param int $return_forum_id
+	 * @param int $unread_post_id
 	 */
 	public function mark_unread_post($return_forum_id, $unread_post_id)
 	{
-		// The board is set up to use cookies rather than the database to store read topic info, the user is not registered or the user is a bot
-		if (!$this->cfg('enabled') || !$this->config['load_db_lastread'] || !$this->user->data['is_registered'] || $this->user->data['is_bot'])
+		if (!$this->can_use())
 		{
-			throw new \phpbb\exception\http_exception(403, 'NOT_AUTHORISED');
+			throw new http_exception(403, 'NOT_AUTHORISED');
 		}
 
 		// Fetch the post_time, topic_id and forum_id of the post being marked as unread
@@ -100,38 +136,36 @@ class core
 		// The post does not exist
 		if (!$row)
 		{
-			throw new \phpbb\exception\runtime_exception('NO_TOPIC');
+			throw new runtime_exception('NO_TOPIC');
 		}
 
-		$post_time = (int) $row['post_time'];
+		$user_id = $this->user->data['user_id'];
+		$post_time = $row['post_time'];
 		$mark_time = $post_time - 1;
-		$topic_id = (int) $row['topic_id'];
-		$forum_id = (int) $row['forum_id'];
+		$topic_id = $row['topic_id'];
+		$forum_id = $row['forum_id'];
 
 		// The topic does not exist, the user is not allowed to read it or the post is too old
 		if (!$topic_id || !$this->auth->acl_get('f_read', $return_forum_id) || !$this->is_valid_post_time($post_time))
 		{
-			throw new \phpbb\exception\runtime_exception('NO_TOPIC');
+			throw new runtime_exception('NO_TOPIC');
 		}
 
 		// set mark_time for the user and the relevant topic in the topics_track table
 		// to the post_time of the post minus 1 (so that phpbb3 will think the post is unread)
 
 		// The following update & insert queries are copied from the markread() function, case $mode == 'topic' to fix needless AND in SQL query
-		$user_id = (int) $this->user->data['user_id'];
-		$sql = 'UPDATE ' . TOPICS_TRACK_TABLE . "
-			SET mark_time = $mark_time
-			WHERE user_id = $user_id " .
+		$sql = 'UPDATE ' . TOPICS_TRACK_TABLE . '
+			SET mark_time = ' . (int) $mark_time . '
+			WHERE user_id = ' . (int) $user_id .
 				// removed condition
-				//AND mark_time < $post_time
-				" AND topic_id = $topic_id";
+				//AND mark_time < (int) $post_time
+				' AND topic_id = ' . (int) $topic_id;
 		$this->db->sql_query($sql);
 
 		// insert row
 		if (!$this->db->sql_affectedrows())
 		{
-			$this->db->sql_return_on_error(true);
-
 			$sql_ary = array(
 				'user_id'	=> $user_id,
 				'topic_id'	=> $topic_id,
@@ -140,8 +174,6 @@ class core
 			);
 
 			$this->db->sql_query('INSERT INTO ' . TOPICS_TRACK_TABLE . ' ' . $this->db->sql_build_array('INSERT', $sql_ary));
-
-			$this->db->sql_return_on_error(false);
 		}
 
 		// now, tinker with the forums_track and topics_track tables in accordance with these rules:
@@ -172,14 +204,14 @@ class core
 
 		// so the first step: calculate the forum_tracking_info
 		$sql = 'SELECT mark_time
-			FROM ' . FORUMS_TRACK_TABLE . "
-			WHERE forum_id = $forum_id
-				AND user_id = $user_id";
+			FROM ' . FORUMS_TRACK_TABLE . '
+			WHERE forum_id = ' . (int) $forum_id . '
+				AND user_id = ' . (int) $user_id;
 		$result = $this->db->sql_query($sql);
 		$row = $this->db->sql_fetchrow($result);
 		$this->db->sql_freeresult($result);
 
-		$forum_tracking_info = (!empty($row['mark_time'])) ? (int) $row['mark_time'] : (int) $this->user->data['user_lastmark'];
+		$forum_tracking_info = !empty($row['mark_time']) ? $row['mark_time'] : $this->user->data['user_lastmark'];
 
 		// next, check to see if the post being marked unread has a post_time at or before $forum_tracking_info
 		if ($post_time <= $forum_tracking_info)
@@ -194,11 +226,11 @@ class core
 			// so, fetch the topic_ids and related info for the topics in this forum that meet the three tests
 			$sql = 'SELECT t.topic_id, t.topic_last_post_time, tt.mark_time
 				FROM ' . TOPICS_TABLE . ' t
-				LEFT JOIN ' . TOPICS_TRACK_TABLE . " tt ON (t.topic_id = tt.topic_id AND tt.user_id = $user_id)
+				LEFT JOIN ' . TOPICS_TRACK_TABLE . ' tt ON (t.topic_id = tt.topic_id AND tt.user_id = ' . (int) $user_id . ')
 				WHERE tt.mark_time IS NULL
-					AND t.forum_id = $forum_id
-					AND t.topic_last_post_time <= $forum_tracking_info
-					AND t.topic_last_post_time > $mark_time";
+					AND t.forum_id = ' . (int) $forum_id . '
+					AND t.topic_last_post_time <= ' . (int) $forum_tracking_info . '
+					AND t.topic_last_post_time > ' . (int) $mark_time;
 			$result = $this->db->sql_query($sql);
 			$sql_insert_ary = array();
 
@@ -207,7 +239,7 @@ class core
 			{
 				$sql_insert_ary[] = array(
 					'user_id'	=> $user_id,
-					'topic_id'	=> (int) $row['topic_id'],
+					'topic_id'	=> $topic_id,
 					'forum_id'	=> $forum_id,
 					'mark_time'	=> $forum_tracking_info,
 				);
@@ -218,9 +250,9 @@ class core
 			// finally, move the forums_track time back to $mark_time by inserting or updating the relevant row;
 			// to do that, find out if there already is an entry for this user_id and forum_id
 			$sql = 'SELECT forum_id
-				FROM ' . FORUMS_TRACK_TABLE . "
-				WHERE forum_id = $forum_id
-					AND user_id = $user_id";
+				FROM ' . FORUMS_TRACK_TABLE . '
+				WHERE forum_id = ' . (int) $forum_id . '
+					AND user_id = ' . (int) $user_id;
 			$result = $this->db->sql_query($sql);
 			$row = $this->db->sql_fetchrow($result);
 			$this->db->sql_freeresult($result);
@@ -229,10 +261,10 @@ class core
 			{
 				// in this case there is already an entry for this user and forum_id
 				// in the forums_track table, so update the entry for the forum_id
-				$sql = 'UPDATE ' . FORUMS_TRACK_TABLE . "
-					SET mark_time = $mark_time
-					WHERE forum_id = $forum_id
-						AND user_id = $user_id";
+				$sql = 'UPDATE ' . FORUMS_TRACK_TABLE . '
+					SET mark_time = ' . (int) $mark_time . '
+					WHERE forum_id = ' . (int) $forum_id . '
+						AND user_id = ' . (int) $user_id;
 				$this->db->sql_query($sql);
 			}
 			else
@@ -251,6 +283,10 @@ class core
 
 	/**
 	 * Get number of topics that have unread posts. Returns a negative number to signal error.
+	 *
+	 * @param int $limit
+	 * @param null|bool $exist_unread
+	 * @return int
 	 */
 	protected function get_unread_topics_count($limit, $exist_unread)
 	{
@@ -281,6 +317,9 @@ class core
 
 	/**
 	 * Returns the display text for the 'Unread posts' search link according to the extension config
+	 *
+	 * @param null|bool $exist_unread
+	 * @return string
 	 */
 	public function get_search_unread_text($exist_unread = null)
 	{

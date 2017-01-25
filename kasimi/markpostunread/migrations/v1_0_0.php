@@ -3,7 +3,7 @@
 /**
  *
  * @package phpBB Extension - Mark Post Unread
- * @copyright (c) 2016 kasimi
+ * @copyright (c) 2015 kasimi - https://kasimi.net
  * @license http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
  *
  */
@@ -30,7 +30,7 @@ class v1_0_0 extends \phpbb\db\migration\migration
 			array('module.add', array(
 				'acp',
 				'ACP_CAT_DOT_MODS',
-				'MARKPOSTUNREAD_TITLE'
+				'MARKPOSTUNREAD_TITLE',
 			)),
 
 			array('module.add', array(
