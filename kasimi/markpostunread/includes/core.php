@@ -173,7 +173,9 @@ class core
 				'mark_time'	=> $mark_time,
 			);
 
+			$this->db->sql_return_on_error(true);
 			$this->db->sql_query('INSERT INTO ' . TOPICS_TRACK_TABLE . ' ' . $this->db->sql_build_array('INSERT', $sql_ary));
+			$this->db->sql_return_on_error(false);
 		}
 
 		// now, tinker with the forums_track and topics_track tables in accordance with these rules:
