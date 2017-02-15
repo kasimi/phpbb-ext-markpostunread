@@ -241,7 +241,7 @@ class core
 			{
 				$sql_insert_ary[] = array(
 					'user_id'	=> $user_id,
-					'topic_id'	=> $topic_id,
+					'topic_id'	=> $row['topic_id'],
 					'forum_id'	=> $forum_id,
 					'mark_time'	=> $forum_tracking_info,
 				);
