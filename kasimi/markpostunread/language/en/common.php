@@ -22,7 +22,13 @@ $lang = array_merge($lang, array(
 	// Viewtopic
 	'MARKPOSTUNREAD_MARK_UNREAD'			=> 'Mark post unread',
 	'MARKPOSTUNREAD_MARKED_UNREAD'			=> 'Post successfully marked unread.',
-	'MARKPOSTUNREAD_REDIRECT_FORMAT'		=> '%s<br /><br />%s<br /><br />%s',
+
+	/*
+	 * %1$s => success message
+	 * %2$s => link for returning to the last visited forum
+	 * %3$s => link for returning to the index page
+	 */
+	'MARKPOSTUNREAD_REDIRECT_FORMAT'		=> '%1$s<br /><br />%2$s<br /><br />%3$s',
 
 	// Navbar
 	'MARKPOSTUNREAD_UNREAD_NUM_MAX'			=> 'Unread posts in over %1$d topics',
