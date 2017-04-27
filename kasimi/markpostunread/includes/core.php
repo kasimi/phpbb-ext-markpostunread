@@ -115,10 +115,9 @@ class core
 	/**
 	 * Marks a post unread when the user clicks the mark post as unread link in viewtopic
 	 *
-	 * @param int $return_forum_id
 	 * @param int $unread_post_id
 	 */
-	public function mark_unread_post($return_forum_id, $unread_post_id)
+	public function mark_unread_post($unread_post_id)
 	{
 		if (!$this->can_use())
 		{
@@ -146,7 +145,7 @@ class core
 		$forum_id = $row['forum_id'];
 
 		// The topic does not exist, the user is not allowed to read it or the post is too old
-		if (!$topic_id || !$this->auth->acl_get('f_read', $return_forum_id) || !$this->is_valid_post_time($post_time))
+		if (!$topic_id || !$this->auth->acl_get('f_read', $forum_id) || !$this->is_valid_post_time($post_time))
 		{
 			throw new runtime_exception('NO_TOPIC');
 		}

@@ -58,7 +58,7 @@ class controller
 	public function markpostunread($return_forum_id, $unread_post_id)
 	{
 		$this->user->add_lang_ext('kasimi/markpostunread', 'common');
-		$this->core->mark_unread_post($return_forum_id, $unread_post_id);
+		$this->core->mark_unread_post($unread_post_id);
 
 		$return_index = append_sid($this->core->root_path . 'index.' . $this->core->php_ext);
 		$return_forum = append_sid($this->core->root_path . 'viewforum.' . $this->core->php_ext, 'f=' . $return_forum_id);
