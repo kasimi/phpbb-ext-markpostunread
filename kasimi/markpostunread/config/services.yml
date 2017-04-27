@@ -3,7 +3,6 @@ services:
         class: kasimi\markpostunread\event\listener
         arguments:
             - '@user'
-            - '@config'
             - '@controller.helper'
             - '@template'
             - '@kasimi.markpostunread.includes.core'

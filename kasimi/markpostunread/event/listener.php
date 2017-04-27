@@ -11,20 +11,16 @@
 namespace kasimi\markpostunread\event;
 
 use kasimi\markpostunread\includes\core;
-use phpbb\config\config;
 use phpbb\controller\helper;
+use phpbb\event\data;
 use phpbb\template\template;
 use phpbb\user;
-use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class listener implements EventSubscriberInterface
 {
 	/* @var user */
 	protected $user;
-
-	/* @var config */
-	protected $config;
 
 	/* @var helper */
 	protected $helper;
@@ -45,21 +41,18 @@ class listener implements EventSubscriberInterface
  	 * Constructor
 	 *
 	 * @param user		$user
-	 * @param config	$config
 	 * @param helper	$helper
 	 * @param template	$template
 	 * @param core		$core
 	 */
 	public function __construct(
 		user $user,
-		config $config,
 		helper $helper,
 		template $template,
 		core $core
 	)
 	{
 		$this->user		= $user;
-		$this->config	= $config;
 		$this->helper	= $helper;
 		$this->template	= $template;
 		$this->core		= $core;
@@ -102,7 +95,7 @@ class listener implements EventSubscriberInterface
 	/**
 	 * Event: core.viewtopic_modify_post_row
 	 *
-	 * @param Event $event
+	 * @param data $event
 	 */
 	public function inject_mark_unread_button($event)
 	{
@@ -126,7 +119,7 @@ class listener implements EventSubscriberInterface
 	/**
 	 * Event: core.permissions
 	 *
-	 * @param Event $event
+	 * @param data $event
 	 */
 	public function add_permission($event)
 	{
@@ -141,11 +134,11 @@ class listener implements EventSubscriberInterface
 	/**
 	 * Event: core.get_unread_topics_modify_sql
 	 *
-	 * @param Event $event
+	 * @param data $event
 	 */
 	public function adjust_get_unread_topics_sql($event)
 	{
-		if ($this->core->cfg('unread_posts_link') != 0)
+		if ($this->core->cfg('unread_posts_link'))
 		{
 			$sql_array = $event['sql_array'];
 			$last_mark = (int) $event['last_mark'];
@@ -166,7 +159,7 @@ class listener implements EventSubscriberInterface
 	/**
 	 * Event: core.display_forums_modify_sql
 	 *
-	 * @param Event $event
+	 * @param data $event
 	 */
 	public function refuse_exist_unread($event)
 	{
@@ -183,7 +176,7 @@ class listener implements EventSubscriberInterface
 	/**
 	 * Event: core.display_forums_modify_template_vars
 	 *
-	 * @param Event $event
+	 * @param data $event
 	 */
 	public function accept_exist_unread($event)
 	{
@@ -203,7 +196,7 @@ class listener implements EventSubscriberInterface
 	{
 		$this->template->assign_vars(array(
 			'L_SEARCH_UNREAD'								=> $this->core->get_search_unread_text($this->exist_unread),
-			'U_MARKPOSTUNREAD_UPDATE_SEARCH_UNREAD_ACTION'	=> $this->core->cfg('unread_posts_link') != 0 ? $this->helper->route('kasimi_markpostunread_searchunread_controller', array(), false) : '',
+			'U_MARKPOSTUNREAD_UPDATE_SEARCH_UNREAD_ACTION'	=> $this->core->cfg('unread_posts_link') ? $this->helper->route('kasimi_markpostunread_searchunread_controller', array(), false) : '',
 		));
 	}
 }
