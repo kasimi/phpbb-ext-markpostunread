@@ -3,8 +3,8 @@
 	"type": "phpbb-extension",
 	"description": "This extension adds a 'Mark post unread' button to each post. There is a user permission to control which users are allowed to use the feature. Moreover it allows you to change the 'Unread posts' search link text to either 'No unread posts' or 'Unread posts in X topics'.",
 	"homepage": "https://github.com/kasimi",
-	"version": "1.1.0",
-	"time": "2017-01-25",
+	"version": "1.1.1",
+	"time": "2017-04-27",
 	"license": "GPL-2.0",
 	"authors": [
 		{
