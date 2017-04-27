@@ -125,7 +125,7 @@ class core
 		}
 
 		// Fetch the post_time, topic_id and forum_id of the post being marked as unread
-		$sql = 'SELECT post_time, topic_id, forum_id
+		$sql = 'SELECT post_time, topic_id, forum_id, post_visibility
 			FROM ' . POSTS_TABLE . '
 			WHERE post_id = ' . (int) $unread_post_id;
 		$result = $this->db->sql_query($sql);
@@ -133,7 +133,7 @@ class core
 		$this->db->sql_freeresult($result);
 
 		// The post does not exist
-		if (!$row)
+		if (empty($row['topic_id']))
 		{
 			throw new runtime_exception('NO_TOPIC');
 		}
@@ -143,9 +143,10 @@ class core
 		$mark_time = $post_time - 1;
 		$topic_id = $row['topic_id'];
 		$forum_id = $row['forum_id'];
+		$is_post_visible = $this->auth->acl_get('m_approve', $forum_id) || $row['post_visibility'] == ITEM_APPROVED;
 
-		// The topic does not exist, the user is not allowed to read it or the post is too old
-		if (!$topic_id || !$this->auth->acl_get('f_read', $forum_id) || !$this->is_valid_post_time($post_time))
+		// The user is not allowed to read it or the post is too old
+		if (!$is_post_visible || !$this->auth->acl_get('f_read', $forum_id) || !$this->is_valid_post_time($post_time))
 		{
 			throw new runtime_exception('NO_TOPIC');
 		}
